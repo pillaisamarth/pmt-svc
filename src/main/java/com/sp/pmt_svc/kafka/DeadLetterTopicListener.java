@@ -1,5 +1,6 @@
 package com.sp.pmt_svc.kafka;
 
+import com.sp.pmt_svc.context.StatContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ public class DeadLetterTopicListener {
     // these 3 kafkalistenercontainer will be managed by concurrentkafkalistenrcontainer.
     @KafkaListener(topics = "order-placed-dlt", concurrency = "3")
     public void receiveOrderDlt(String message){
+        StatContext.numOrdersMovedToDLT.incrementAndGet();
         log.info("Received message in dead-letter-topic: {}", message);
     }
 }

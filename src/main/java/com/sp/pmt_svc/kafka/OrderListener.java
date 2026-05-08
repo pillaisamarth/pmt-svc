@@ -1,5 +1,6 @@
 package com.sp.pmt_svc.kafka;
 
+import com.sp.pmt_svc.context.StatContext;
 import com.sp.pmt_svc.model.OrderEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ public class OrderListener {
 
     @KafkaListener(topics = "order-placed", errorHandler = "customErrorHandler", concurrency = "3")
     public void listenOrderPlaced(String message){
+        StatContext.numOrdersReceived.incrementAndGet();
         log.info("Received OrderPlaced event: {}", message);
 
         if(Math.random() < 0.3){
@@ -33,9 +35,11 @@ public class OrderListener {
 
         Boolean processed = processedOrderIds.putIfAbsent(orderId, true);
         if(processed != null){
+            StatContext.numDuplicateOrder.incrementAndGet();
             log.info("Skipping duplicate orderId: {}", orderId);
             return;
         }
+        StatContext.numOrdersProcessedSuccessfully.incrementAndGet();
         log.info("Successfully processed order with id:{}", orderId);
     }
 }
